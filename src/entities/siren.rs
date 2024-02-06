@@ -8,7 +8,7 @@ impl Siren {
         if siren.len() == 9 && siren.chars().all(char::is_numeric) {
             return Ok(Siren(siren.to_string()));
         }
-        Err("Invalid siren (Only 9 characters)".to_string())
+        Err("Invalid siren (Only 9 digits characters)".to_string())
     }
 }
 

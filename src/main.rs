@@ -11,8 +11,20 @@ mod file_manager;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
+    /// Sets a custom default root path
+    #[arg(long, value_name = "FILE")]
+    root_path: Option<PathBuf>,
+
     /// Sets a custom config file
-    #[arg(short, long, value_name = "INVOICE_ROOT_FOLDER")]
+    #[arg(long, value_name = "FILE")]
+    config_file_path: Option<PathBuf>,
+
+    /// Sets a custom customer file
+    #[arg(long, value_name = "FILE")]
+    customer_file_path: Option<PathBuf>,
+
+    /// Sets a custom invoice file
+    #[arg(long, value_name = "FILE")]
     invoice_path: Option<PathBuf>,
 
     /// Turn debugging information on
@@ -39,7 +51,7 @@ fn main() {
     let cli = Cli::parse();
 
     let current_dir = env::current_dir().unwrap();
-    let invoice_path = cli.invoice_path.as_deref().unwrap_or(current_dir.as_path());
+    let invoice_manager_path = cli.root_path.as_deref().unwrap_or(current_dir.as_path());
 
     match cli.debug {
         0 => env_logger::Builder::new().filter(None, LevelFilter::Warn).init(),
@@ -49,8 +61,13 @@ fn main() {
     }
 
     match &cli.command {
-        Some(Commands::Init) => initiate_invoice_directory(invoice_path)
-            .expect("Unable initiate this directory"),
+        Some(Commands::Init) => initiate_invoice_directory(
+            invoice_manager_path,
+            cli.invoice_path.as_deref(),
+            cli.config_file_path.as_deref(),
+            cli.customer_file_path.as_deref(),
+        )
+        .expect("Unable initiate this directory"),
         Some(Commands::Invoice {}) => {}
         Some(Commands::Customer {}) => {}
         Some(Commands::Stats {}) => {}

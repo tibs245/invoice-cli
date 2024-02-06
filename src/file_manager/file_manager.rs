@@ -233,7 +233,7 @@ impl FileManager {
         if !&file_manager.settings_file_path.exists() {
             info!(
                 "Create settings file in {}",
-                &file_manager.customer_file_path.to_string_lossy()
+                &file_manager.settings_file_path.to_string_lossy()
             );
             if let Err(error) = fs::write(&file_manager.settings_file_path, "") {
                 error!(
