@@ -1,3 +1,4 @@
+use crate::cli::create_customer::create_customer;
 use crate::cli::init::initiate_invoice_directory;
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
@@ -40,11 +41,25 @@ enum Commands {
     /// Init invoices path
     Init,
     /// Manage Invoice
-    Invoice {},
+    Invoice {
+        #[command(subcommand)]
+        action: Option<CrudAction>,
+    },
     /// Manage Customer
-    Customer {},
+    Customer {
+        #[command(subcommand)]
+        action: Option<CrudAction>,
+    },
     /// Show statistique
     Stats {},
+}
+
+#[derive(Subcommand)]
+enum CrudAction {
+    Create,
+    Get,
+    Edit,
+    Delete,
 }
 
 fn main() {
@@ -67,9 +82,27 @@ fn main() {
             cli.config_file_path.as_deref(),
             cli.customer_file_path.as_deref(),
         )
-        .expect("Unable initiate this directory"),
-        Some(Commands::Invoice {}) => {}
-        Some(Commands::Customer {}) => {}
+        .unwrap(),
+        Some(Commands::Invoice { action }) => match action {
+            Some(CrudAction::Get) => {}
+            Some(CrudAction::Create) => {}
+            Some(CrudAction::Edit) => {}
+            Some(CrudAction::Delete) => {}
+            None => {}
+        },
+        Some(Commands::Customer { action }) => match action {
+            Some(CrudAction::Get) => {}
+            Some(CrudAction::Create) => create_customer(
+                invoice_manager_path,
+                cli.invoice_path.as_deref(),
+                cli.config_file_path.as_deref(),
+                cli.customer_file_path.as_deref(),
+            )
+            .unwrap(),
+            Some(CrudAction::Edit) => {}
+            Some(CrudAction::Delete) => {}
+            None => {}
+        },
         Some(Commands::Stats {}) => {}
         None => {}
     };

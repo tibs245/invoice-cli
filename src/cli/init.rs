@@ -2,7 +2,7 @@ use crate::entities::settings::{Enterprise, Settings};
 use crate::entities::siren::Siren;
 use crate::file_manager::file_manager::{FileManager, Manager};
 use dialoguer::{Editor, Input};
-use log::{info, trace};
+use log::trace;
 use std::error::Error;
 use std::path::Path;
 
