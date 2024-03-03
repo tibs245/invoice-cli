@@ -1,4 +1,6 @@
 use crate::cli::create_customer::create_customer;
+use crate::cli::create_invoice::create_invoice;
+use crate::cli::get_customers::get_customers;
 use crate::cli::init::initiate_invoice_directory;
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
@@ -85,13 +87,25 @@ fn main() {
         .unwrap(),
         Some(Commands::Invoice { action }) => match action {
             Some(CrudAction::Get) => {}
-            Some(CrudAction::Create) => {}
+            Some(CrudAction::Create) => create_invoice(
+                invoice_manager_path,
+                cli.invoice_path.as_deref(),
+                cli.config_file_path.as_deref(),
+                cli.customer_file_path.as_deref(),
+            )
+            .unwrap(),
             Some(CrudAction::Edit) => {}
             Some(CrudAction::Delete) => {}
             None => {}
         },
         Some(Commands::Customer { action }) => match action {
-            Some(CrudAction::Get) => {}
+            Some(CrudAction::Get) => get_customers(
+                invoice_manager_path,
+                cli.invoice_path.as_deref(),
+                cli.config_file_path.as_deref(),
+                cli.customer_file_path.as_deref(),
+            )
+            .unwrap(),
             Some(CrudAction::Create) => create_customer(
                 invoice_manager_path,
                 cli.invoice_path.as_deref(),
