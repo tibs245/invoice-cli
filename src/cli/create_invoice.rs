@@ -41,8 +41,6 @@ pub fn create_invoice(
 
     let mut products = vec![];
 
-    let mut product_index = 1;
-
     loop {
         let product_title: String =
             Input::new().with_prompt("Product title").interact_text().unwrap();

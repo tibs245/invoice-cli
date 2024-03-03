@@ -26,19 +26,19 @@ mod tests {
     fn test_new_siren() {
         assert_eq!(
             Siren::new(""),
-            Err("Invalid siren (Only 9 characters)".to_string())
+            Err("Invalid siren (Only 9 digits characters)".to_string())
         );
         assert_eq!(
             Siren::new("123"),
-            Err("Invalid siren (Only 9 characters)".to_string())
+            Err("Invalid siren (Only 9 digits characters)".to_string())
         );
         assert_eq!(
             Siren::new("12336478383766"),
-            Err("Invalid siren (Only 9 characters)".to_string())
+            Err("Invalid siren (Only 9 digits characters)".to_string())
         );
         assert_eq!(
             Siren::new("abcdefhij"),
-            Err("Invalid siren (Only 9 characters)".to_string())
+            Err("Invalid siren (Only 9 digits characters)".to_string())
         );
         assert_eq!(Siren::new("123456789").unwrap().0, "123456789");
     }
