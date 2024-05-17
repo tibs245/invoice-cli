@@ -1,8 +1,10 @@
-use crate::entities::invoice_date::{deser_invoice_date, ser_invoice_date};
-use crate::entities::product::Product;
+use std::fmt;
+
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::fmt;
+
+use crate::entities::invoice_date::{deser_invoice_date, ser_invoice_date};
+use crate::entities::product::Product;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 pub struct InvoiceDayId(String);
@@ -35,11 +37,11 @@ impl fmt::Display for InvoiceDayId {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Invoice {
     #[serde(
-        serialize_with = "ser_invoice_date",
-        deserialize_with = "deser_invoice_date"
+    serialize_with = "ser_invoice_date",
+    deserialize_with = "deser_invoice_date"
     )]
     pub date: NaiveDate,
     pub customer_id: String,
@@ -64,10 +66,17 @@ impl Invoice {
     }
 }
 
+impl fmt::Display for Invoice {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} - {} - {} €", self.get_ref().unwrap(), self.customer_id, self.get_total_price().to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use chrono::NaiveDate;
+
+    use super::*;
 
     impl Invoice {
         pub fn generate_simple_invoice_example() -> Invoice {
@@ -236,5 +245,14 @@ mod tests {
         };
 
         assert_eq!(invoice_example.get_total_price(), 875.0);
+    }
+
+    #[test]
+    fn test_invoice_display() {
+        let invoice = Invoice::generate_simple_invoice_example();
+
+        let output = format!("{}", invoice);
+
+        assert_eq!(output, "2015031401 - king - 350");
     }
 }

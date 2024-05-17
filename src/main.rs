@@ -1,11 +1,18 @@
-use crate::cli::create_customer::create_customer;
-use crate::cli::create_invoice::create_invoice;
-use crate::cli::get_customers::get_customers;
-use crate::cli::init::initiate_invoice_directory;
+use std::env;
+use std::error::Error;
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
-use std::env;
-use std::path::PathBuf;
+use crate::cli::cli_error::CliError;
+
+use crate::cli::context_parameters::ContextParameters;
+use crate::cli::create_customer::create_customer;
+use crate::cli::create_invoice::create_invoice;
+use crate::cli::delete_invoice::delete_invoice;
+use crate::cli::get_customers::get_customers;
+use crate::cli::get_invoice::get_invoice;
+use crate::cli::init::initiate_invoice_directory;
 
 mod cli;
 mod entities;
@@ -52,14 +59,16 @@ enum Commands {
         #[command(subcommand)]
         action: Option<CrudAction>,
     },
-    /// Show statistique
+    /// Show stats
     Stats {},
 }
 
 #[derive(Subcommand)]
 enum CrudAction {
     Create,
-    Get,
+    Get {
+        element: Option<String>
+    },
     Edit,
     Delete,
 }
@@ -77,47 +86,38 @@ fn main() {
         _ => env_logger::Builder::new().filter(None, LevelFilter::Trace).init(),
     }
 
-    match &cli.command {
+    let parameters = ContextParameters {
+        invoice_manager_path,
+        invoice_path: cli.invoice_path.as_deref(),
+        config_file_path: cli.config_file_path.as_deref(),
+        customer_file_path: cli.customer_file_path.as_deref(),
+    };
+
+    let result: Result<(), Box<dyn Error + Sync + Send + 'static>> = match &cli.command {
         Some(Commands::Init) => initiate_invoice_directory(
-            invoice_manager_path,
-            cli.invoice_path.as_deref(),
-            cli.config_file_path.as_deref(),
-            cli.customer_file_path.as_deref(),
-        )
-        .unwrap(),
+            parameters
+        ),
         Some(Commands::Invoice { action }) => match action {
-            Some(CrudAction::Get) => {}
-            Some(CrudAction::Create) => create_invoice(
-                invoice_manager_path,
-                cli.invoice_path.as_deref(),
-                cli.config_file_path.as_deref(),
-                cli.customer_file_path.as_deref(),
-            )
-            .unwrap(),
-            Some(CrudAction::Edit) => {}
-            Some(CrudAction::Delete) => {}
-            None => {}
+            Some(CrudAction::Get { element }) => get_invoice(parameters, element),
+            Some(CrudAction::Create) => create_invoice(parameters),
+            Some(CrudAction::Edit) => {
+                Err(Box::new(CliError::CommandNotExists("You can't edit a invoice. You can only delete the old invoice and create another".to_string())))
+            }
+            Some(CrudAction::Delete) => delete_invoice(parameters),
+            None => {
+                Err(Box::new(CliError::CommandNotExists("You can get, create or delete invoice".to_string())))
+            }
         },
         Some(Commands::Customer { action }) => match action {
-            Some(CrudAction::Get) => get_customers(
-                invoice_manager_path,
-                cli.invoice_path.as_deref(),
-                cli.config_file_path.as_deref(),
-                cli.customer_file_path.as_deref(),
-            )
-            .unwrap(),
-            Some(CrudAction::Create) => create_customer(
-                invoice_manager_path,
-                cli.invoice_path.as_deref(),
-                cli.config_file_path.as_deref(),
-                cli.customer_file_path.as_deref(),
-            )
-            .unwrap(),
-            Some(CrudAction::Edit) => {}
-            Some(CrudAction::Delete) => {}
-            None => {}
+            Some(CrudAction::Get { element }) => get_customers(parameters),
+            Some(CrudAction::Create) => create_customer(parameters),
+            Some(CrudAction::Edit) => {Err(Box::new(CliError::NotImplementedYet()))}
+            Some(CrudAction::Delete) => {Err(Box::new(CliError::NotImplementedYet()))}
+            None => {Err(Box::new(CliError::NotImplementedYet()))}
         },
-        Some(Commands::Stats {}) => {}
-        None => {}
+        Some(Commands::Stats {}) => {Err(Box::new(CliError::NotImplementedYet()))}
+        None => Err(Box::new(CliError::CommandNotExists("The option is not correct. Try to get help".to_string())))
     };
+
+    result.unwrap_or_else(|error| println!("Error : {}", error));
 }

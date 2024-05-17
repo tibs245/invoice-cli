@@ -1,17 +1,14 @@
+use std::error::Error;
+
+use dialoguer::{Editor, Input};
+use log::trace;
+
+use crate::cli::context_parameters::ContextParameters;
 use crate::entities::settings::{Enterprise, Settings};
 use crate::entities::siren::Siren;
 use crate::file_manager::file_manager::{FileManager, Manager};
-use dialoguer::{Editor, Input};
-use log::trace;
-use std::error::Error;
-use std::path::Path;
 
-pub fn initiate_invoice_directory(
-    invoice_manager_path: &Path,
-    invoice_path: Option<&Path>,
-    config_file_path: Option<&Path>,
-    customer_file_path: Option<&Path>,
-) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Initiate invoice directory");
 
     let name: String =
@@ -63,10 +60,10 @@ pub fn initiate_invoice_directory(
     };
 
     let file_manager = FileManager::init(
-        invoice_manager_path,
-        invoice_path,
-        customer_file_path,
-        config_file_path,
+        context_parameters.invoice_manager_path,
+        context_parameters.invoice_path,
+        context_parameters.customer_file_path,
+        context_parameters.config_file_path,
     )?;
     file_manager.create_settings(settings)?;
 

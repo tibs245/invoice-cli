@@ -1,16 +1,13 @@
-use crate::entities::customer::Customer;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use std::error::Error;
+
 use dialoguer::Input;
 use log::trace;
-use std::error::Error;
-use std::path::Path;
 
-pub fn create_customer(
-    invoice_manager_path: &Path,
-    invoice_path: Option<&Path>,
-    config_file_path: Option<&Path>,
-    customer_file_path: Option<&Path>,
-) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+use crate::cli::context_parameters::ContextParameters;
+use crate::entities::customer::Customer;
+use crate::file_manager::file_manager::{FileManager, Manager};
+
+pub fn create_customer(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Create customer");
 
     let name: String =
@@ -25,10 +22,10 @@ pub fn create_customer(
     let customer = Customer { name, address, postal, city };
 
     let file_manager = FileManager::new(
-        invoice_manager_path,
-        invoice_path,
-        customer_file_path,
-        config_file_path,
+        context_parameters.invoice_manager_path,
+        context_parameters.invoice_path,
+        context_parameters.customer_file_path,
+        context_parameters.config_file_path,
     )?;
 
     let customer = file_manager.create_customer(customer)?;

@@ -1,26 +1,20 @@
 use crate::entities::invoice::Invoice;
 use crate::entities::product::Product;
-use crate::entities::siren::Siren;
 use crate::file_manager::file_manager::{FileManager, Manager};
 use chrono::Local;
 use dialoguer::{Confirm, FuzzySelect, Input};
 use log::trace;
 use std::error::Error;
-use std::path::Path;
+use crate::cli::context_parameters::ContextParameters;
 
-pub fn create_invoice(
-    invoice_manager_path: &Path,
-    invoice_path: Option<&Path>,
-    config_file_path: Option<&Path>,
-    invoice_file_path: Option<&Path>,
-) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
-    trace!("=== Create customer");
+pub fn create_invoice(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+    trace!("=== Create invoice");
 
     let file_manager = FileManager::new(
-        invoice_manager_path,
-        invoice_path,
-        invoice_file_path,
-        config_file_path,
+        context_parameters.invoice_manager_path,
+        context_parameters.invoice_path,
+        context_parameters.customer_file_path,
+        context_parameters.config_file_path,
     )?;
 
     let all_customers_id: Vec<String> = file_manager

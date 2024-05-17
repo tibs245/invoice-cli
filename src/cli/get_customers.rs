@@ -1,21 +1,18 @@
-use crate::file_manager::file_manager::{FileManager, Manager};
-use log::trace;
 use std::error::Error;
-use std::path::Path;
 
-pub fn get_customers(
-    invoice_manager_path: &Path,
-    invoice_path: Option<&Path>,
-    config_file_path: Option<&Path>,
-    customer_file_path: Option<&Path>,
-) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+use log::trace;
+
+use crate::cli::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::{FileManager, Manager};
+
+pub fn get_customers(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get customers");
 
     let file_manager = FileManager::new(
-        invoice_manager_path,
-        invoice_path,
-        customer_file_path,
-        config_file_path,
+        context_parameters.invoice_manager_path,
+        context_parameters.invoice_path,
+        context_parameters.customer_file_path,
+        context_parameters.config_file_path,
     )?;
 
     let all_customers = file_manager.get_all_customers()?;
