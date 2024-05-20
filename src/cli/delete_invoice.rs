@@ -7,7 +7,7 @@ use crate::cli::context_parameters::ContextParameters;
 use crate::cli::utils::select_invoice::select_invoice;
 use crate::entities;
 use crate::entities::product::Product;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
 pub fn delete_invoice(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Cancel invoice");

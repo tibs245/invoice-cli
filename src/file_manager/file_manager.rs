@@ -1,7 +1,16 @@
+use std::collections::HashMap;
+use std::error::Error;
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use chrono::NaiveDate;
+use log::{error, info};
+
 use crate::entities::customer::Customer;
 use crate::entities::invoice::Invoice;
 use crate::entities::settings::Settings;
 use crate::file_manager::customer::create_customer::create_customer;
+use crate::file_manager::customer::delete_customer::delete_customer;
 use crate::file_manager::customer::get_all_customers::get_all_customers;
 use crate::file_manager::invoice::create_invoice::create_invoice;
 use crate::file_manager::invoice::get_all_invoices::get_all_invoices;
@@ -12,14 +21,8 @@ use crate::file_manager::invoice::get_invoice_by_filepath::get_invoice_by_file_p
 use crate::file_manager::invoice_manager_error::InvoiceManagerError;
 use crate::file_manager::settings::get_settings::get_settings;
 use crate::file_manager::settings::save_settings::save_settings;
-use chrono::NaiveDate;
-use log::{error, info};
-use std::collections::HashMap;
-use std::error::Error;
-use std::fs;
-use std::path::{Path, PathBuf};
 
-pub trait Manager {
+pub trait InvoiceManager {
     fn create_invoice(
         &self,
         invoice: Invoice,
@@ -51,6 +54,14 @@ pub trait Manager {
         &self,
         customer: Customer,
     ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
+    fn edit_customer(
+        &self,
+        customer: Customer,
+    ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
+    fn remove_customer<'a>(
+        &self,
+        customer_ref: &'a str,
+    ) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
     fn create_settings(
         &self,
         settings: Settings,
@@ -87,7 +98,7 @@ impl FileManager {
             return Err(Box::try_from(InvoiceManagerError::UnableInitFolderInto(
                 root_path.to_string_lossy().to_string(),
             ))
-            .unwrap());
+                .unwrap());
         }
 
         let invoice_path = match invoice_path {
@@ -132,7 +143,7 @@ impl FileManager {
             return Err(Box::try_from(InvoiceManagerError::InvoiceStorePathNotFound(
                 root_path.to_string_lossy().to_string(),
             ))
-            .unwrap());
+                .unwrap());
         }
 
         if !file_manager.invoice_path.is_dir() {
@@ -144,7 +155,7 @@ impl FileManager {
             return Err(Box::try_from(InvoiceManagerError::InvoiceStorePathNotFound(
                 file_manager.invoice_path.to_string_lossy().to_string(),
             ))
-            .unwrap());
+                .unwrap());
         }
 
         if !file_manager.customer_file_path.exists() {
@@ -157,7 +168,7 @@ impl FileManager {
                 Box::try_from(InvoiceManagerError::CustomerStorePathNotFound(
                     file_manager.customer_file_path.to_string_lossy().to_string(),
                 ))
-                .unwrap(),
+                    .unwrap(),
             );
         }
 
@@ -188,7 +199,7 @@ impl FileManager {
                     root_path.to_string_lossy().to_string(),
                     error,
                 ))
-                .unwrap());
+                    .unwrap());
             }
         }
 
@@ -206,7 +217,7 @@ impl FileManager {
                     file_manager.invoice_path.to_string_lossy().to_string(),
                     error,
                 ))
-                .unwrap());
+                    .unwrap());
             }
         }
 
@@ -226,7 +237,7 @@ impl FileManager {
                         error,
                     ),
                 )
-                .unwrap());
+                    .unwrap());
             }
         }
 
@@ -246,7 +257,7 @@ impl FileManager {
                         error,
                     ),
                 )
-                .unwrap());
+                    .unwrap());
             }
         }
 
@@ -254,7 +265,7 @@ impl FileManager {
     }
 }
 
-impl Manager for FileManager {
+impl InvoiceManager for FileManager {
     fn create_invoice(
         &self,
         invoice: Invoice,
@@ -278,7 +289,7 @@ impl Manager for FileManager {
                 .as_path()
                 .join(invoice_reference.to_string() + ".yaml"),
         )
-        .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
+            .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
     }
     fn get_invoice_by_date(
         &self,
@@ -320,6 +331,21 @@ impl Manager for FileManager {
             .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
     }
 
+    fn edit_customer(
+        &self,
+        customer: Customer,
+    ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>> {
+        todo!("Edit customer not implemented yet")
+    }
+
+    fn remove_customer(
+        &self,
+        customer_ref: &str,
+    ) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+        delete_customer(self.customer_file_path.as_path(), customer_ref)
+            .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
+    }
+
     fn create_settings(
         &self,
         settings: Settings,
@@ -344,10 +370,12 @@ impl Manager for FileManager {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use chrono::NaiveDate;
+
     use crate::entities::invoice::InvoiceDayId;
     use crate::entities::product::Product;
-    use chrono::NaiveDate;
+
+    use super::*;
 
     #[test]
     pub fn file_manager_generate_instance() {
@@ -375,7 +403,7 @@ mod tests {
             Some(&(temp_dir.to_owned().join("custom_enterprise"))),
             Some(&(temp_dir.to_owned().join("custom_settings"))),
         )
-        .expect("Unable initiate file manager");
+            .expect("Unable initiate file manager");
 
         assert_eq!(
             file_manager.invoice_path,

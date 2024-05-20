@@ -1,4 +1,5 @@
 use std::error::Error;
+
 use log::trace;
 
 use crate::cli::cli_error::CliError;
@@ -6,7 +7,7 @@ use crate::cli::cli_error::CliError::InvoiceRefNotFound;
 use crate::cli::context_parameters::ContextParameters;
 use crate::cli::utils::select_invoice::select_invoice;
 use crate::entities::invoice::Invoice;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
 pub fn get_invoice(context_parameters: ContextParameters, invoice_ref: &Option<String>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get invoice");

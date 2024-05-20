@@ -3,9 +3,9 @@ use std::error::Error;
 use log::trace;
 
 use crate::cli::context_parameters::ContextParameters;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
-pub fn get_customers(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+pub fn list_customers(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get customers");
 
     let file_manager = FileManager::new(

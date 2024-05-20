@@ -4,15 +4,18 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
-use crate::cli::cli_error::CliError;
 
+use crate::cli::cli_error::CliError;
 use crate::cli::context_parameters::ContextParameters;
 use crate::cli::create_customer::create_customer;
 use crate::cli::create_invoice::create_invoice;
+use crate::cli::delete_customer::delete_customer;
 use crate::cli::delete_invoice::delete_invoice;
-use crate::cli::get_customers::get_customers;
+use crate::cli::get_customer::get_customer;
 use crate::cli::get_invoice::get_invoice;
 use crate::cli::init::initiate_invoice_directory;
+use crate::cli::list_customers::list_customers;
+use crate::cli::list_invoices::list_invoices;
 
 mod cli;
 mod entities;
@@ -66,11 +69,14 @@ enum Commands {
 #[derive(Subcommand)]
 enum CrudAction {
     Create,
+    List,
     Get {
         element: Option<String>
     },
     Edit,
-    Delete,
+    Delete {
+        element: Option<String>
+    },
 }
 
 fn main() {
@@ -98,24 +104,26 @@ fn main() {
             parameters
         ),
         Some(Commands::Invoice { action }) => match action {
+            Some(CrudAction::List) => list_invoices(parameters),
             Some(CrudAction::Get { element }) => get_invoice(parameters, element),
             Some(CrudAction::Create) => create_invoice(parameters),
             Some(CrudAction::Edit) => {
                 Err(Box::new(CliError::CommandNotExists("You can't edit a invoice. You can only delete the old invoice and create another".to_string())))
             }
-            Some(CrudAction::Delete) => delete_invoice(parameters),
+            Some(CrudAction::Delete { element }) => delete_invoice(parameters),
             None => {
                 Err(Box::new(CliError::CommandNotExists("You can get, create or delete invoice".to_string())))
             }
         },
         Some(Commands::Customer { action }) => match action {
-            Some(CrudAction::Get { element }) => get_customers(parameters),
+            Some(CrudAction::List) => list_customers(parameters),
+            Some(CrudAction::Get { element }) => get_customer(parameters, element),
             Some(CrudAction::Create) => create_customer(parameters),
-            Some(CrudAction::Edit) => {Err(Box::new(CliError::NotImplementedYet()))}
-            Some(CrudAction::Delete) => {Err(Box::new(CliError::NotImplementedYet()))}
-            None => {Err(Box::new(CliError::NotImplementedYet()))}
+            Some(CrudAction::Edit) => { Err(Box::new(CliError::NotImplementedYet())) }
+            Some(CrudAction::Delete { element }) => { delete_customer(parameters, element) }
+            None => { Err(Box::new(CliError::NotImplementedYet())) }
         },
-        Some(Commands::Stats {}) => {Err(Box::new(CliError::NotImplementedYet()))}
+        Some(Commands::Stats {}) => { Err(Box::new(CliError::NotImplementedYet())) }
         None => Err(Box::new(CliError::CommandNotExists("The option is not correct. Try to get help".to_string())))
     };
 

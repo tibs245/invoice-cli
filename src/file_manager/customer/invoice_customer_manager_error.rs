@@ -13,4 +13,7 @@ pub enum InvoiceCustomerManagerError {
 
     #[error("Unable to create customer with duplicated id: {1} in {0}")]
     UnableCreateCustomerDuplicatedId(String, String),
+    
+    #[error("Unable to delete customer with ref : `{0}`: Ref not found")]
+    UnableDeleteCustomerRefNotFound(String)
 }

@@ -1,11 +1,13 @@
-use crate::entities::invoice::Invoice;
-use crate::entities::product::Product;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use std::error::Error;
+
 use chrono::Local;
 use dialoguer::{Confirm, FuzzySelect, Input};
 use log::trace;
-use std::error::Error;
+
 use crate::cli::context_parameters::ContextParameters;
+use crate::entities::invoice::Invoice;
+use crate::entities::product::Product;
+use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
 pub fn create_invoice(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Create invoice");

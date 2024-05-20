@@ -6,7 +6,7 @@ use log::trace;
 use crate::cli::context_parameters::ContextParameters;
 use crate::entities::settings::{Enterprise, Settings};
 use crate::entities::siren::Siren;
-use crate::file_manager::file_manager::{FileManager, Manager};
+use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
 pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Initiate invoice directory");
