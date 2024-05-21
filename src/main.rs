@@ -9,14 +9,19 @@ use crate::cli::cli_error::CliError;
 use crate::cli::context_parameters::ContextParameters;
 use crate::cli::create_customer::create_customer;
 use crate::cli::create_invoice::create_invoice;
+use crate::cli::day_stats::day_stats;
 use crate::cli::delete_customer::delete_customer;
 use crate::cli::delete_invoice::cancel_invoice;
 use crate::cli::edit_customer::edit_customer;
+use crate::cli::edit_settings::edit_settings;
 use crate::cli::get_customer::get_customer;
 use crate::cli::get_invoice::get_invoice;
+use crate::cli::get_settings::get_settings;
 use crate::cli::init::initiate_invoice_directory;
 use crate::cli::list_customers::list_customers;
 use crate::cli::list_invoices::list_invoices;
+use crate::cli::month_stats::month_stats;
+use crate::cli::year_stats::year_stats;
 
 mod cli;
 mod entities;
@@ -64,7 +69,14 @@ enum Commands {
         action: Option<CrudAction>,
     },
     /// Show stats
-    Stats {},
+    Stats {
+        #[command(subcommand)]
+        action: Option<StatsAction>
+    },
+    Settings {
+        #[command(subcommand)]
+        action: Option<CrudAction>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -79,6 +91,23 @@ enum CrudAction {
     },
     Delete {
         element: Option<String>
+    },
+}
+
+
+#[derive(Subcommand)]
+enum StatsAction {
+    Day {
+        day: Option<u32>,
+        month: Option<u32>,
+        year: Option<i32>,
+    },
+    Month {
+        month: Option<u32>,
+        year: Option<i32>,
+    },
+    Year {
+        year: Option<i32>
     },
 }
 
@@ -110,7 +139,7 @@ fn main() {
             Some(CrudAction::List) => list_invoices(parameters),
             Some(CrudAction::Get { element }) => get_invoice(parameters, element),
             Some(CrudAction::Create) => create_invoice(parameters),
-            Some(CrudAction::Edit { element }) => {
+            Some(CrudAction::Edit { element: _element }) => {
                 Err(Box::new(CliError::CommandNotExists("You can't edit a invoice. You can only cancel the old invoice and create another".to_string())))
             }
             Some(CrudAction::Delete { element }) => cancel_invoice(parameters, element),
@@ -126,7 +155,25 @@ fn main() {
             Some(CrudAction::Delete { element }) => { delete_customer(parameters, element) }
             None => { Err(Box::new(CliError::NotImplementedYet())) }
         },
-        Some(Commands::Stats {}) => { Err(Box::new(CliError::NotImplementedYet())) }
+        Some(Commands::Stats { action }) => {
+            match action {
+                Some(StatsAction::Day { day, month, year }) => { day_stats(parameters, day, month, year) }
+                Some(StatsAction::Month { month, year }) => { month_stats(parameters, month, year) }
+                Some(StatsAction::Year { year }) => { year_stats(parameters, year) }
+                None => { Err(Box::new(CliError::NotImplementedYet())) }
+            }
+        }
+        Some(Commands::Settings { action }) => match action {
+            Some(CrudAction::List) => todo!("Not implemented"),
+            Some(CrudAction::Get { element: _element }) => get_settings(parameters),
+            Some(CrudAction::Create) => {
+                println!("This command init a new folder invoice. Don't use it on a already initiated folder");
+                initiate_invoice_directory(parameters)
+            },
+            Some(CrudAction::Edit { element: _element }) => { edit_settings(parameters) }
+            Some(CrudAction::Delete { element: _element }) => todo!("Not implemented, If you want delete the folder you can delete all files manually"),
+            None => { Err(Box::new(CliError::NotImplementedYet())) }
+        },
         None => Err(Box::new(CliError::CommandNotExists("The option is not correct. Try to get help".to_string())))
     };
 

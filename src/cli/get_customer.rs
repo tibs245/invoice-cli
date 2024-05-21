@@ -2,13 +2,10 @@ use std::error::Error;
 
 use log::trace;
 
-use crate::cli::cli_error::CliError;
-use crate::cli::cli_error::CliError::InvoiceRefNotFound;
 use crate::cli::context_parameters::ContextParameters;
-use crate::cli::utils::select_customer::select_customer;
 use crate::cli::utils::select_customer_or_use_default::select_customer_or_use_default;
 use crate::entities::customer::Customer;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::file_manager::FileManager;
 
 pub fn get_customer(context_parameters: ContextParameters, customer_ref: &Option<String>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get customer");

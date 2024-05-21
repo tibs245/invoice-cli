@@ -11,3 +11,8 @@ pub mod list_invoices;
 pub mod list_customers;
 pub mod delete_customer;
 pub mod edit_customer;
+pub mod month_stats;
+pub mod year_stats;
+pub mod day_stats;
+pub mod get_settings;
+pub mod edit_settings;

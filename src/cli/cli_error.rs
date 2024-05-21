@@ -11,9 +11,6 @@ pub enum CliError {
     #[error("Invoice to load invoice folder : {0}")]
     UnableLoadInvoiceFolder(String),
 
-    #[error("Invoice to read customer file : {0}")]
-    UnableReadCustomerFile(String),
-
     #[error("Not implemented yet")]
     NotImplementedYet(),
 

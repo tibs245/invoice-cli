@@ -22,9 +22,9 @@ Simple project to manage invoice with Rust modules.
   - [x] Initiate folder
   - [x] Create customer
   - [x] Create invoice
-  - [ ] Cancel invoice
-  - [ ] Show enterprise stats
-  - Edit enterprise settings
+  - [x] Cancel invoice
+  - [x] Show enterprise stats
+  - [x] Edit enterprise settings
 - [ ] Auto-generate pdf from template
 - [ ] Split modules
 - [ ] Add Swift module for Mac UI interface

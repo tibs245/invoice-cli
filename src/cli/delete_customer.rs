@@ -1,6 +1,5 @@
 use std::error::Error;
 
-use chrono::Local;
 use log::trace;
 
 use crate::cli::context_parameters::ContextParameters;

@@ -1,9 +1,10 @@
-use chrono::{Datelike, NaiveDate};
-use serde::{Deserialize, Serialize};
 use std::fmt;
 
+use chrono::{Datelike, NaiveDate};
+use serde::{Deserialize, Serialize};
+
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-struct DayString(String);
+pub struct DayString(String);
 
 impl DayString {
     pub fn new(day: &str) -> Result<Self, String> {
@@ -32,8 +33,10 @@ impl fmt::Display for DayString {
         write!(f, "{}", self.0)
     }
 }
+
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-struct MonthString(String);
+pub(crate) struct MonthString(String);
+
 impl MonthString {
     pub fn new(month: &str) -> Result<Self, String> {
         if month.len() <= 2 && month.chars().all(char::is_numeric) {
@@ -65,6 +68,7 @@ impl fmt::Display for MonthString {
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
 struct YearString(String);
+
 impl YearString {
     pub fn new(day: &str) -> Result<Self, String> {
         if day.chars().all(char::is_numeric) {
@@ -116,7 +120,7 @@ impl Into<NaiveDate> for InvoiceDate {
             self.month.to_string().parse::<u32>().unwrap(),
             self.day.to_string().parse::<u32>().unwrap(),
         )
-        .unwrap()
+            .unwrap()
     }
 }
 
@@ -124,15 +128,15 @@ pub(crate) fn ser_invoice_date<S>(
     date: &NaiveDate,
     serializer: S,
 ) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
+    where
+        S: serde::Serializer,
 {
     InvoiceDate::from(date).serialize(serializer)
 }
 
 pub(crate) fn deser_invoice_date<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
-where
-    D: serde::Deserializer<'de>,
+    where
+        D: serde::Deserializer<'de>,
 {
     let date: NaiveDate = InvoiceDate::deserialize(deserializer)?.into();
     Ok(date)

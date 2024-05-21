@@ -1,3 +1,5 @@
+use std::fmt::Formatter;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
@@ -15,6 +17,12 @@ impl Siren {
 impl From<u32> for Siren {
     fn from(siren: u32) -> Siren {
         Siren::new(&siren.to_string()).unwrap()
+    }
+}
+
+impl std::fmt::Display for Siren {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
