@@ -11,6 +11,7 @@ use crate::entities::invoice::Invoice;
 use crate::entities::settings::Settings;
 use crate::file_manager::customer::create_customer::create_customer;
 use crate::file_manager::customer::delete_customer::delete_customer;
+use crate::file_manager::customer::edit_customer::edit_customer;
 use crate::file_manager::customer::get_all_customers::get_all_customers;
 use crate::file_manager::invoice::create_invoice::create_invoice;
 use crate::file_manager::invoice::get_all_invoices::get_all_invoices;
@@ -56,6 +57,7 @@ pub trait InvoiceManager {
     ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
     fn edit_customer(
         &self,
+        customer_ref: String,
         customer: Customer,
     ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
     fn remove_customer<'a>(
@@ -333,9 +335,11 @@ impl InvoiceManager for FileManager {
 
     fn edit_customer(
         &self,
+        customer_ref: String,
         customer: Customer,
     ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>> {
-        todo!("Edit customer not implemented yet")
+        edit_customer(self.customer_file_path.as_path(), customer_ref, customer)
+            .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
     }
 
     fn remove_customer(
