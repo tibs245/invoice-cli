@@ -10,3 +10,4 @@ mod utils;
 pub mod list_invoices;
 pub mod list_customers;
 pub mod delete_customer;
+pub mod edit_customer;

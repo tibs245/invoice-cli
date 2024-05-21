@@ -4,12 +4,12 @@ use chrono::Local;
 use log::trace;
 
 use crate::cli::context_parameters::ContextParameters;
-use crate::cli::utils::select_invoice::select_invoice;
+use crate::cli::utils::select_invoice_or_use_default::select_invoice_or_use_default;
 use crate::entities;
 use crate::entities::product::Product;
 use crate::file_manager::file_manager::{FileManager, InvoiceManager};
 
-pub fn delete_invoice(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+pub fn cancel_invoice(context_parameters: ContextParameters, invoice_ref: &Option<String>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Cancel invoice");
 
     let file_manager = FileManager::new(
@@ -19,7 +19,7 @@ pub fn delete_invoice(context_parameters: ContextParameters) -> Result<(), Box<d
         context_parameters.config_file_path,
     )?;
 
-    let invoice_selected = select_invoice(&file_manager)?;
+    let invoice_selected = select_invoice_or_use_default(&file_manager, invoice_ref)?;
 
     let cancel_invoice = entities::invoice::Invoice {
         date: Local::now().date_naive(),

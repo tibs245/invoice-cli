@@ -10,7 +10,8 @@ use crate::cli::context_parameters::ContextParameters;
 use crate::cli::create_customer::create_customer;
 use crate::cli::create_invoice::create_invoice;
 use crate::cli::delete_customer::delete_customer;
-use crate::cli::delete_invoice::delete_invoice;
+use crate::cli::delete_invoice::cancel_invoice;
+use crate::cli::edit_customer::edit_customer;
 use crate::cli::get_customer::get_customer;
 use crate::cli::get_invoice::get_invoice;
 use crate::cli::init::initiate_invoice_directory;
@@ -73,7 +74,9 @@ enum CrudAction {
     Get {
         element: Option<String>
     },
-    Edit,
+    Edit {
+        element: Option<String>
+    },
     Delete {
         element: Option<String>
     },
@@ -107,10 +110,10 @@ fn main() {
             Some(CrudAction::List) => list_invoices(parameters),
             Some(CrudAction::Get { element }) => get_invoice(parameters, element),
             Some(CrudAction::Create) => create_invoice(parameters),
-            Some(CrudAction::Edit) => {
-                Err(Box::new(CliError::CommandNotExists("You can't edit a invoice. You can only delete the old invoice and create another".to_string())))
+            Some(CrudAction::Edit { element }) => {
+                Err(Box::new(CliError::CommandNotExists("You can't edit a invoice. You can only cancel the old invoice and create another".to_string())))
             }
-            Some(CrudAction::Delete { element }) => delete_invoice(parameters),
+            Some(CrudAction::Delete { element }) => cancel_invoice(parameters, element),
             None => {
                 Err(Box::new(CliError::CommandNotExists("You can get, create or delete invoice".to_string())))
             }
@@ -119,7 +122,7 @@ fn main() {
             Some(CrudAction::List) => list_customers(parameters),
             Some(CrudAction::Get { element }) => get_customer(parameters, element),
             Some(CrudAction::Create) => create_customer(parameters),
-            Some(CrudAction::Edit) => { Err(Box::new(CliError::NotImplementedYet())) }
+            Some(CrudAction::Edit { element }) => { edit_customer(parameters, element) }
             Some(CrudAction::Delete { element }) => { delete_customer(parameters, element) }
             None => { Err(Box::new(CliError::NotImplementedYet())) }
         },
