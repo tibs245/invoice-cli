@@ -253,6 +253,6 @@ mod tests {
 
         let output = format!("{}", invoice);
 
-        assert_eq!(output, "2015031401 - king - 350");
+        assert_eq!(output, "2015031401 - king - 350 €");
     }
 }
