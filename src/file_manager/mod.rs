@@ -3,3 +3,4 @@ pub mod file_manager;
 mod invoice;
 pub mod invoice_manager_error;
 mod settings;
+pub mod context_parameters;

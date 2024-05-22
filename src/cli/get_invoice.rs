@@ -4,20 +4,16 @@ use log::trace;
 
 use crate::cli::cli_error::CliError;
 use crate::cli::cli_error::CliError::InvoiceRefNotFound;
-use crate::cli::context_parameters::ContextParameters;
 use crate::cli::utils::select_invoice::select_invoice;
 use crate::entities::invoice::Invoice;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub fn get_invoice(context_parameters: ContextParameters, invoice_ref: &Option<String>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get invoice");
 
-    let file_manager = FileManager::new(
-        context_parameters.invoice_manager_path,
-        context_parameters.invoice_path,
-        context_parameters.customer_file_path,
-        context_parameters.config_file_path,
-    )?;
+    let file_manager = FileManager::new(context_parameters.clone())?;
 
     let invoice_selected: Invoice = if let Some(invoice_preselected) = invoice_ref {
         match file_manager.get_invoice_by_ref(&invoice_preselected) {

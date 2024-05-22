@@ -9,6 +9,7 @@ use log::{error, info};
 use crate::entities::customer::Customer;
 use crate::entities::invoice::Invoice;
 use crate::entities::settings::Settings;
+use crate::file_manager::context_parameters::ContextParameters;
 use crate::file_manager::customer::create_customer::create_customer;
 use crate::file_manager::customer::delete_customer::delete_customer;
 use crate::file_manager::customer::edit_customer::edit_customer;
@@ -22,76 +23,35 @@ use crate::file_manager::invoice::get_invoice_by_filepath::get_invoice_by_file_p
 use crate::file_manager::invoice_manager_error::InvoiceManagerError;
 use crate::file_manager::settings::get_settings::get_settings;
 use crate::file_manager::settings::save_settings::save_settings;
-
-pub trait InvoiceManager {
-    fn create_invoice(
-        &self,
-        invoice: Invoice,
-    ) -> Result<PathBuf, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_all_invoices(
-        &self,
-    ) -> Result<Vec<Invoice>, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_invoice_by_ref(
-        &self,
-        invoice_reference: &str,
-    ) -> Result<Invoice, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_invoice_by_date(
-        &self,
-        date: NaiveDate,
-    ) -> Result<Vec<Invoice>, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_invoice_by_month(
-        &self,
-        year: i32,
-        month: u32,
-    ) -> Result<Vec<Invoice>, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_invoice_by_year(
-        &self,
-        year: i32,
-    ) -> Result<Vec<Invoice>, Box<dyn Error + Sync + Send + 'static>>;
-    fn get_all_customers(
-        &self,
-    ) -> Result<HashMap<String, Customer>, Box<dyn Error + Sync + Send + 'static>>;
-    fn create_customer(
-        &self,
-        customer: Customer,
-    ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
-    fn edit_customer(
-        &self,
-        customer_ref: String,
-        customer: Customer,
-    ) -> Result<Customer, Box<dyn Error + Sync + Send + 'static>>;
-    fn remove_customer<'a>(
-        &self,
-        customer_ref: &'a str,
-    ) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
-    fn create_settings(
-        &self,
-        settings: Settings,
-    ) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
-    fn edit_settings(
-        &self,
-        settings: Settings,
-    ) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
-    fn get_settings(&self) -> Result<Settings, Box<dyn Error + Sync + Send + 'static>>;
-}
+use crate::generator::generate_invoice::generate_invoice;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub struct FileManager {
     invoice_path: PathBuf,
     customer_file_path: PathBuf,
     settings_file_path: PathBuf,
+    build_path: PathBuf,
+    target_path: PathBuf,
 }
 
 impl FileManager {
     const DEFAULT_INVOICE_PATH: &'static str = "invoices";
     const DEFAULT_CUSTOMER_FILE_PATH: &'static str = "customer.yaml";
     const DEFAULT_SETTINGS_FILE_PATH: &'static str = "settings.yaml";
+    const DEFAULT_BUILD_PATH: &'static str = "build";
+    const DEFAULT_TARGET_PATH: &'static str = "target";
 
-    fn generate_instance(
-        root_path: &Path,
-        invoice_path: Option<&Path>,
-        customer_file_path: Option<&Path>,
-        settings_file_path: Option<&Path>,
+    fn generate_instance(context_parameters: ContextParameters
     ) -> Result<Self, Box<dyn Error + Sync + Send + 'static>> {
+        let ContextParameters {
+            invoice_manager_path: root_path,
+            invoice_path,
+            customer_file_path,
+            config_file_path: settings_file_path,
+            build_path,
+            target_path,
+        } = context_parameters;
+
         if !root_path.exists() && !root_path.parent().unwrap().exists() {
             error!(
                 "Unable find parent of invoice directory in {}",
@@ -118,24 +78,35 @@ impl FileManager {
             None => root_path.to_owned().join(Self::DEFAULT_SETTINGS_FILE_PATH),
         };
 
+        let build_path = match build_path {
+            Some(build_path_given) => build_path_given.to_owned(),
+            None => root_path.to_owned().join(Self::DEFAULT_BUILD_PATH),
+        };
+
+        let target_path = match target_path {
+            Some(target_path_given) => target_path_given.to_owned(),
+            None => root_path.to_owned().join(Self::DEFAULT_TARGET_PATH),
+        };
+
         Ok(FileManager {
             invoice_path,
             customer_file_path,
             settings_file_path,
+            build_path,
+            target_path,
         })
     }
-    pub fn new(
-        root_path: &Path,
-        invoice_path: Option<&Path>,
-        customer_file_path: Option<&Path>,
-        settings_file_path: Option<&Path>,
-    ) -> Result<Self, Box<dyn Error + Sync + Send + 'static>> {
-        let file_manager = Self::generate_instance(
-            root_path,
-            invoice_path,
-            customer_file_path,
-            settings_file_path,
-        )?;
+    pub fn new(context_parameters: ContextParameters) -> Result<Self, Box<dyn Error + Sync + Send + 'static>> {
+        let ContextParameters {
+            invoice_manager_path: root_path,
+            invoice_path: _invoice_path,
+            customer_file_path: _customer_file_path,
+            config_file_path: _settings_file_path,
+            build_path: _build_path,
+            target_path: _target_path,
+        } = context_parameters;
+
+        let file_manager = Self::generate_instance(context_parameters)?;
 
         if !root_path.exists() && root_path.parent().unwrap().exists() {
             error!(
@@ -177,18 +148,17 @@ impl FileManager {
         Ok(file_manager)
     }
 
-    pub fn init(
-        root_path: &Path,
-        invoice_path: Option<&Path>,
-        customer_file_path: Option<&Path>,
-        settings_file_path: Option<&Path>,
-    ) -> Result<Self, Box<dyn Error + Sync + Send + 'static>> {
-        let file_manager = Self::generate_instance(
-            root_path,
-            invoice_path,
-            customer_file_path,
-            settings_file_path,
-        )?;
+    pub fn init(context_parameters: ContextParameters) -> Result<Self, Box<dyn Error + Sync + Send + 'static>> {
+        let ContextParameters {
+            invoice_manager_path: root_path,
+            invoice_path: _invoice_path,
+            customer_file_path: _customer_file_path,
+            config_file_path: _settings_file_path,
+            build_path: _build_path,
+            target_path: _target_path,
+        } = context_parameters;
+
+        let file_manager = Self::generate_instance(context_parameters)?;
 
         if !root_path.exists() && root_path.parent().unwrap().exists() {
             info!("Create root directory in {}", root_path.to_string_lossy());
@@ -370,6 +340,10 @@ impl InvoiceManager for FileManager {
         get_settings(&self.settings_file_path)
             .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
     }
+
+    fn generate_invoice(&self, invoice_path: &Path, filename: &str) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+        generate_invoice(&self.build_path, &self.settings_file_path, &self.customer_file_path, &invoice_path, &self.target_path.to_owned().join(filename))
+    }
 }
 
 #[cfg(test)]
@@ -385,7 +359,7 @@ mod tests {
     pub fn file_manager_generate_instance() {
         let temp_dir_assert_fs = assert_fs::TempDir::new().unwrap();
         let temp_dir = temp_dir_assert_fs.path();
-        let file_manager = FileManager::generate_instance(temp_dir, None, None, None)
+        let file_manager = FileManager::generate_instance(ContextParameters::from(temp_dir))
             .expect("Unable initiate file manager");
 
         assert_eq!(
@@ -402,11 +376,14 @@ mod tests {
         );
 
         let file_manager = FileManager::generate_instance(
-            &temp_dir,
-            Some(&(temp_dir.to_owned().join("custom_invoice_folder"))),
-            Some(&(temp_dir.to_owned().join("custom_enterprise"))),
-            Some(&(temp_dir.to_owned().join("custom_settings"))),
-        )
+            ContextParameters {
+                invoice_manager_path: &temp_dir,
+                invoice_path: Some(&(temp_dir.to_owned().join("custom_invoice_folder"))),
+                customer_file_path: Some(&(temp_dir.to_owned().join("custom_enterprise"))),
+                config_file_path: Some(&(temp_dir.to_owned().join("custom_settings"))),
+                build_path: Some(&(temp_dir.to_owned().join("custom_build"))),
+                target_path: Some(&(temp_dir.to_owned().join("custom_target"))),
+            })
             .expect("Unable initiate file manager");
 
         assert_eq!(
@@ -451,12 +428,12 @@ mod tests {
 
         let temp_dir_assert_fs = assert_fs::TempDir::new().unwrap();
 
-        let file_manager = FileManager::new(temp_dir_assert_fs.path(), None, None, None);
+        let file_manager = FileManager::new(ContextParameters::from(temp_dir_assert_fs.path()));
 
         // Test if we have error on new instance before init
         assert!(file_manager.is_err());
 
-        let file_manager = FileManager::init(temp_dir_assert_fs.path(), None, None, None)
+        let file_manager = FileManager::init(ContextParameters::from(temp_dir_assert_fs.path()))
             .expect("Unable initiate file manager");
 
         assert!(temp_dir_assert_fs.join(FileManager::DEFAULT_INVOICE_PATH).exists());
@@ -491,14 +468,14 @@ mod tests {
         test_invoice_result_data_for_manager(&file_manager);
 
         // Test prevent if we have not lost data with regeneration
-        let file_manager = FileManager::init(temp_dir_assert_fs.path(), None, None, None)
+        let file_manager = FileManager::init(ContextParameters::from(temp_dir_assert_fs.path()))
             .expect("Unable initiate file manager");
 
         test_all_invoices_data_for_manager(&file_manager);
         test_invoice_result_data_for_manager(&file_manager);
 
         // Test new instance work
-        let file_manager = FileManager::new(temp_dir_assert_fs.path(), None, None, None)
+        let file_manager = FileManager::new(ContextParameters::from(temp_dir_assert_fs.path()))
             .expect("Unable create new file manager instance");
 
         test_all_invoices_data_for_manager(&file_manager);

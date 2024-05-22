@@ -3,21 +3,17 @@ use std::error::Error;
 use dialoguer::Input;
 use log::trace;
 
-use crate::cli::context_parameters::ContextParameters;
 use crate::cli::utils::select_customer_or_use_default::select_customer_or_use_default;
 use crate::entities::customer::Customer;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub fn edit_customer(context_parameters: ContextParameters, customer_ref: &Option<String>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Create customer");
 
-    let file_manager = FileManager::new(
-        context_parameters.invoice_manager_path,
-        context_parameters.invoice_path,
-        context_parameters.customer_file_path,
-        context_parameters.config_file_path,
-    )?;
-    
+    let file_manager = FileManager::new(context_parameters)?;
+
     let (customer_ref_selected, customer_to_edit) = select_customer_or_use_default(&file_manager, customer_ref)?;
 
     let name: String =

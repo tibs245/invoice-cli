@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand};
 use log::LevelFilter;
 
 use crate::cli::cli_error::CliError;
-use crate::cli::context_parameters::ContextParameters;
+use crate::file_manager::context_parameters::ContextParameters;
 use crate::cli::create_customer::create_customer;
 use crate::cli::create_invoice::create_invoice;
 use crate::cli::day_stats::day_stats;
@@ -26,6 +26,8 @@ use crate::cli::year_stats::year_stats;
 mod cli;
 mod entities;
 mod file_manager;
+mod generator;
+mod invoice_manager;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -45,6 +47,14 @@ struct Cli {
     /// Sets a custom invoice file
     #[arg(long, value_name = "FILE")]
     invoice_path: Option<PathBuf>,
+
+    /// Sets a custom invoice file
+    #[arg(long, value_name = "FILE")]
+    build_path: Option<PathBuf>,
+
+    /// Sets a custom invoice file
+    #[arg(long, value_name = "FILE")]
+    target_path: Option<PathBuf>,
 
     /// Turn debugging information on
     #[arg(short, long, action = clap::ArgAction::Count)]
@@ -129,6 +139,8 @@ fn main() {
         invoice_path: cli.invoice_path.as_deref(),
         config_file_path: cli.config_file_path.as_deref(),
         customer_file_path: cli.customer_file_path.as_deref(),
+        build_path: cli.build_path.as_deref(),
+        target_path: cli.target_path.as_deref(),
     };
 
     let result: Result<(), Box<dyn Error + Sync + Send + 'static>> = match &cli.command {
@@ -169,7 +181,7 @@ fn main() {
             Some(CrudAction::Create) => {
                 println!("This command init a new folder invoice. Don't use it on a already initiated folder");
                 initiate_invoice_directory(parameters)
-            },
+            }
             Some(CrudAction::Edit { element: _element }) => { edit_settings(parameters) }
             Some(CrudAction::Delete { element: _element }) => todo!("Not implemented, If you want delete the folder you can delete all files manually"),
             None => { Err(Box::new(CliError::NotImplementedYet())) }

@@ -3,20 +3,16 @@ use std::error::Error;
 use chrono::Datelike;
 use log::trace;
 
-use crate::cli::context_parameters::ContextParameters;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub fn year_stats(context_parameters: ContextParameters, year: &Option<i32>) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Get year stats");
 
     let year = year.unwrap_or(chrono::Local::now().year());
 
-    let file_manager = FileManager::new(
-        context_parameters.invoice_manager_path,
-        context_parameters.invoice_path,
-        context_parameters.customer_file_path,
-        context_parameters.config_file_path,
-    )?;
+    let file_manager = FileManager::new(context_parameters)?;
 
     let all_year_invoices = file_manager.get_invoice_by_year(year)?;
 

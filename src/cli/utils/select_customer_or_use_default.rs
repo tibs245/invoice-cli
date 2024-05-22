@@ -3,7 +3,8 @@ use std::error::Error;
 use crate::cli::cli_error::CliError;
 use crate::cli::utils::select_customer::select_customer;
 use crate::entities::customer::Customer;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub(crate) fn select_customer_or_use_default(file_manager: &FileManager, customer_ref: &Option<String>) -> Result<(String, Customer), Box<dyn Error + Sync + Send + 'static>> {
     if let Some(customer_preselected) = customer_ref {

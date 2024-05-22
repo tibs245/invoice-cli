@@ -3,23 +3,19 @@ use std::error::Error;
 use dialoguer::{Editor, Input};
 use log::trace;
 
-use crate::cli::context_parameters::ContextParameters;
 use crate::entities::settings::{Enterprise, Settings};
 use crate::entities::siren::Siren;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub fn edit_settings(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Edit settings");
 
-    let file_manager = FileManager::new(
-        context_parameters.invoice_manager_path,
-        context_parameters.invoice_path,
-        context_parameters.customer_file_path,
-        context_parameters.config_file_path,
-    )?;
+    let file_manager = FileManager::new(context_parameters)?;
 
     let settings: Settings = file_manager.get_settings()?;
-    
+
     let name: String =
         Input::new().with_prompt("Enterprise name").with_initial_text(settings.enterprise.name).interact_text().unwrap();
 

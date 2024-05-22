@@ -3,9 +3,10 @@ use std::error::Error;
 use dialoguer::Input;
 use log::trace;
 
-use crate::cli::context_parameters::ContextParameters;
 use crate::entities::customer::Customer;
-use crate::file_manager::file_manager::{FileManager, InvoiceManager};
+use crate::file_manager::context_parameters::ContextParameters;
+use crate::file_manager::file_manager::FileManager;
+use crate::invoice_manager::invoice_manager::InvoiceManager;
 
 pub fn create_customer(context_parameters: ContextParameters) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
     trace!("=== Create customer");
@@ -21,12 +22,7 @@ pub fn create_customer(context_parameters: ContextParameters) -> Result<(), Box<
 
     let customer = Customer { name, address, postal, city };
 
-    let file_manager = FileManager::new(
-        context_parameters.invoice_manager_path,
-        context_parameters.invoice_path,
-        context_parameters.customer_file_path,
-        context_parameters.config_file_path,
-    )?;
+    let file_manager = FileManager::new(context_parameters)?;
 
     let customer = file_manager.create_customer(customer)?;
 
