@@ -15,3 +15,5 @@ pub mod year_stats;
 pub mod day_stats;
 pub mod get_settings;
 pub mod edit_settings;
+pub mod generate_invoice;
+pub mod generate_all_invoice;

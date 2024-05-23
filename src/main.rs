@@ -6,7 +6,6 @@ use clap::{Parser, Subcommand};
 use log::LevelFilter;
 
 use crate::cli::cli_error::CliError;
-use crate::file_manager::context_parameters::ContextParameters;
 use crate::cli::create_customer::create_customer;
 use crate::cli::create_invoice::create_invoice;
 use crate::cli::day_stats::day_stats;
@@ -14,6 +13,8 @@ use crate::cli::delete_customer::delete_customer;
 use crate::cli::delete_invoice::cancel_invoice;
 use crate::cli::edit_customer::edit_customer;
 use crate::cli::edit_settings::edit_settings;
+use crate::cli::generate_all_invoice::generate_all_invoice;
+use crate::cli::generate_invoice::generate_invoice;
 use crate::cli::get_customer::get_customer;
 use crate::cli::get_invoice::get_invoice;
 use crate::cli::get_settings::get_settings;
@@ -22,6 +23,7 @@ use crate::cli::list_customers::list_customers;
 use crate::cli::list_invoices::list_invoices;
 use crate::cli::month_stats::month_stats;
 use crate::cli::year_stats::year_stats;
+use crate::file_manager::context_parameters::ContextParameters;
 
 mod cli;
 mod entities;
@@ -87,6 +89,10 @@ enum Commands {
         #[command(subcommand)]
         action: Option<CrudAction>,
     },
+    Generate {
+        invoice: Option<String>
+    },
+    GenerateAll,
 }
 
 #[derive(Subcommand)]
@@ -183,9 +189,11 @@ fn main() {
                 initiate_invoice_directory(parameters)
             }
             Some(CrudAction::Edit { element: _element }) => { edit_settings(parameters) }
-            Some(CrudAction::Delete { element: _element }) => todo!("Not implemented, If you want delete the folder you can delete all files manually"),
+            Some(CrudAction::Delete { element: _element }) => Err(Box::new(CliError::CommandNotExists("Not implemented, If you want delete the folder you can delete all files manually".to_string()))),
             None => { Err(Box::new(CliError::NotImplementedYet())) }
         },
+        Some(Commands::Generate { invoice }) => generate_invoice(parameters, invoice),
+        Some(Commands::GenerateAll) => generate_all_invoice(parameters),
         None => Err(Box::new(CliError::CommandNotExists("The option is not correct. Try to get help".to_string())))
     };
 

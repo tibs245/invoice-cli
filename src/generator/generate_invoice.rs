@@ -14,15 +14,13 @@ fn generate_default_template() -> String {
 fn generate_main_template(settings_path: &Path, customer_path: &Path, invoice_path: &Path, template_path: &Path) -> String {
     let main_template = include_str!("assets/main_template.typ");
 
-    println!("{}", template_path.file_name().unwrap().to_str().unwrap());
-
     let main_template = main_template.replace("{{ TEMPLATE_PATH }}", template_path.to_str().unwrap());
     let main_template = main_template.replace("{{ SETTINGS_PATH }}", settings_path.to_str().unwrap());
     let main_template = main_template.replace("{{ CUSTOMERS_PATH }}", customer_path.to_str().unwrap());
     main_template.replace("{{ INVOICE_PATH }}", invoice_path.to_str().unwrap())
 }
 
-pub fn generate_invoice(build_path: &Path, settings_path: &Path, customer_path: &Path, invoice_path: &Path, target_path: &Path) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
+pub fn generate_invoice<'a>(build_path: &Path, settings_path: &Path, customer_path: &Path, invoice_path: &Path, target_path: &'a Path) -> Result<&'a Path, Box<dyn Error + Sync + Send + 'static>> {
     if !build_path.exists() && build_path.parent().unwrap().exists() {
         info!("Create build directory in {}", build_path.to_string_lossy());
         if let Err(error) = fs::create_dir(build_path) {
@@ -55,8 +53,11 @@ pub fn generate_invoice(build_path: &Path, settings_path: &Path, customer_path: 
         }
     }
 
+    let mut main_file_type_name = target_path.to_owned();
+    main_file_type_name.set_extension("typ");
+
     let default_template_path = build_path.to_owned().join("default_invoice_template.typ");
-    let main_template_path = build_path.to_owned().join("main_template.typ");
+    let main_template_path = build_path.to_owned().join(main_file_type_name.file_name().unwrap());
 
     fs::write(&default_template_path, generate_default_template())?;
     fs::write(&main_template_path, generate_main_template(settings_path, customer_path, invoice_path, &default_template_path))?;
@@ -64,5 +65,5 @@ pub fn generate_invoice(build_path: &Path, settings_path: &Path, customer_path: 
 
     Command::new("typst").arg("compile").arg("--root").arg("/").arg(main_template_path).arg(target_path).spawn()?;
 
-    Ok(())
+    Ok(target_path)
 }

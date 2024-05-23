@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::path::{Path, PathBuf};
+
 use chrono::NaiveDate;
+
 use crate::entities::customer::Customer;
 use crate::entities::invoice::Invoice;
 use crate::entities::settings::Settings;
@@ -57,5 +59,5 @@ pub trait InvoiceManager {
     ) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
     fn get_settings(&self) -> Result<Settings, Box<dyn Error + Sync + Send + 'static>>;
 
-    fn generate_invoice<'a>(&self, invoice_path: &Path, output: &'a str) -> Result<(), Box<dyn Error + Sync + Send + 'static>>;
+    fn generate_invoice<'a>(&self, invoice_path: &Path, output: &str) -> Result<PathBuf, Box<dyn Error + Sync + Send + 'static>>;
 }

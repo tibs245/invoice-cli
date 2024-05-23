@@ -235,6 +235,10 @@ impl FileManager {
 
         Ok(file_manager)
     }
+    
+    pub fn get_invoice_path(&self) -> &Path {
+        &self.invoice_path
+    }
 }
 
 impl InvoiceManager for FileManager {
@@ -341,8 +345,8 @@ impl InvoiceManager for FileManager {
             .map_err(|e| Box::new(e) as Box<dyn Error + Sync + Send + 'static>)
     }
 
-    fn generate_invoice(&self, invoice_path: &Path, filename: &str) -> Result<(), Box<dyn Error + Sync + Send + 'static>> {
-        generate_invoice(&self.build_path, &self.settings_file_path, &self.customer_file_path, &invoice_path, &self.target_path.to_owned().join(filename))
+    fn generate_invoice<'a>(&self, invoice_path: &Path, filename: &str) -> Result<PathBuf, Box<dyn Error + Sync + Send + 'static>> {
+        Ok(generate_invoice(&self.build_path, &self.settings_file_path, &self.customer_file_path, &invoice_path, &self.target_path.to_owned().join(filename))?.to_owned())
     }
 }
 
