@@ -25,6 +25,12 @@ pub fn get_settings(context_parameters: ContextParameters) -> Result<(), Box<dyn
     println!("Postal Code: {}", settings.enterprise.postal);
     println!("Phone: {}", settings.enterprise.phone);
     println!("Title: {}", settings.enterprise.title);
+    
+    if settings.enterprise.tva.len() > 0 {
+        println!("TVA Number: {}", settings.enterprise.tva);
+    } else {
+        println!("No TVA Number")
+    }
 
     println!("\nInvoice clauses :");
 

@@ -40,6 +40,8 @@ pub fn edit_settings(context_parameters: ContextParameters) -> Result<(), Box<dy
     let postal = Input::new().with_prompt("Postal code").with_initial_text(settings.enterprise.postal).interact_text().unwrap();
 
     let phone = Input::new().with_prompt("Phone number").with_initial_text(settings.enterprise.phone).interact_text().unwrap();
+    
+    let tva = Input::new().with_prompt("TVA Number").with_initial_text(settings.enterprise.tva).allow_empty(true).interact_text().unwrap();
 
     let politeness = Input::new()
         .with_prompt("Politeness")
@@ -59,6 +61,7 @@ pub fn edit_settings(context_parameters: ContextParameters) -> Result<(), Box<dy
             city,
             postal,
             phone,
+            tva
         },
         law_rules,
         politeness,

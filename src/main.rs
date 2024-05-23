@@ -85,13 +85,16 @@ enum Commands {
         #[command(subcommand)]
         action: Option<StatsAction>
     },
+    /// Manage settings and enterprise informations
     Settings {
         #[command(subcommand)]
         action: Option<CrudAction>,
     },
+    /// Generate PDF for a invoice
     Generate {
         invoice: Option<String>
     },
+    /// Generate PDF for all invoices saved
     GenerateAll,
 }
 

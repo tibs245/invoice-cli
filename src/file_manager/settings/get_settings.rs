@@ -1,7 +1,8 @@
-use crate::entities::settings::Settings;
-use crate::file_manager::settings::settings_file_manager_error::SettingsFileManagerError;
 use std::fs;
 use std::path::Path;
+
+use crate::entities::settings::Settings;
+use crate::file_manager::settings::settings_file_manager_error::SettingsFileManagerError;
 
 pub fn get_settings(
     settings_file_path: &Path,
@@ -17,9 +18,11 @@ pub fn get_settings(
 
 #[cfg(test)]
 mod tests {
-    use crate::file_manager::settings::get_settings::get_settings;
-    use assert_fs::prelude::PathChild;
     use std::fs;
+
+    use assert_fs::prelude::PathChild;
+
+    use crate::file_manager::settings::get_settings::get_settings;
 
     #[test]
     fn customer_map_from_string() {
@@ -32,6 +35,7 @@ mod tests {
             + "  postal: '12345'\n"
             + "  phone: 123-456-7890\n"
             + "  title: CEO\n"
+            + "  tva: ''\n"
             + "law_rules: Example Law\n"
             + "politeness: Kind Regards\n";
 

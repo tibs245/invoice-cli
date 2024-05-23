@@ -1,5 +1,6 @@
-use crate::entities::siren::Siren;
 use serde::{Deserialize, Serialize};
+
+use crate::entities::siren::Siren;
 
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -12,6 +13,7 @@ pub struct Enterprise {
     pub postal: String,
     pub phone: String,
     pub title: String,
+    pub tva: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -24,9 +26,9 @@ pub struct Settings {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use serde_test::{assert_tokens, Token};
 
+    use super::*;
     impl Enterprise {
         pub fn generate_simple_enterprise() -> Enterprise {
             Enterprise {
@@ -38,6 +40,7 @@ mod tests {
                 postal: "12345".into(),
                 phone: "123-456-7890".into(),
                 title: "CEO".into(),
+                tva: "".into(),
             }
         }
     }
@@ -59,7 +62,7 @@ mod tests {
         assert_tokens(
             &enterprise,
             &[
-                Token::Struct { name: "Enterprise", len: 8 },
+                Token::Struct { name: "Enterprise", len: 9 },
                 Token::Str("name"),
                 Token::Str("Example Enterprise"),
                 Token::Str("siren"),
@@ -77,6 +80,8 @@ mod tests {
                 Token::Str("123-456-7890"),
                 Token::Str("title"),
                 Token::Str("CEO"),
+                Token::Str("tva"),
+                Token::Str(""),
                 Token::StructEnd,
             ],
         );
@@ -91,7 +96,7 @@ mod tests {
             &[
                 Token::Struct { name: "Settings", len: 3 },
                 Token::Str("enterprise"),
-                Token::Struct { name: "Enterprise", len: 8 },
+                Token::Struct { name: "Enterprise", len: 9 },
                 Token::Str("name"),
                 Token::Str("Example Enterprise"),
                 Token::Str("siren"),
@@ -109,6 +114,8 @@ mod tests {
                 Token::Str("123-456-7890"),
                 Token::Str("title"),
                 Token::Str("CEO"),
+                Token::Str("tva"),
+                Token::Str(""),
                 Token::StructEnd,
                 Token::Str("law_rules"),
                 Token::Str("Example Law"),
@@ -136,6 +143,7 @@ mod tests {
                 + "  postal: '12345'\n"
                 + "  phone: 123-456-7890\n"
                 + "  title: CEO\n"
+                + "  tva: ''\n"
                 + "law_rules: Example Law\n"
                 + "politeness: Kind Regards\n"
         );
@@ -154,6 +162,7 @@ mod tests {
             + "  postal: '12345'\n"
             + "  phone: 123-456-7890\n"
             + "  title: CEO\n"
+            + "  tva: ''\n"
             + "law_rules: Example Law\n"
             + "politeness: Kind Regards\n";
 
@@ -176,6 +185,10 @@ mod tests {
         assert_eq!(
             settings_base_example.enterprise.phone,
             settings_example.enterprise.phone
+        );
+        assert_eq!(
+            settings_base_example.enterprise.tva,
+            settings_example.enterprise.tva
         );
     }
 }

@@ -36,6 +36,8 @@ pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Resu
     let postal = Input::new().with_prompt("Postal code").interact_text().unwrap();
 
     let phone = Input::new().with_prompt("Phone number").interact_text().unwrap();
+    
+    let tva = Input::new().with_prompt("TVA Number").allow_empty(true).interact_text().unwrap();
 
     let politeness = Input::new()
         .with_prompt("Politeness")
@@ -55,6 +57,7 @@ pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Resu
             city,
             postal,
             phone,
+            tva
         },
         law_rules,
         politeness,

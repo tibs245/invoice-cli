@@ -13,8 +13,13 @@ clap = { version = "4.4.18", features = ["derive"] }
 log = "0.4.20"
 env_logger = { version = "0.11.1", features = [] }
 thiserror = "1.0.56"
-dialoguer = {  version = "0.11.0", features = ["default", "editor", "fuzzy-select"] }
+dialoguer = { version = "0.11.0", features = ["default", "editor", "fuzzy-select"] }
 
 [dev-dependencies]
 assert_fs = "1.1.1"
 serde_test = "1.0.176"
+
+[profile.release]
+opt-level = 3               # Use slightly better optimizations.
+overflow-checks = false
+debug = false
