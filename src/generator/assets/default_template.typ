@@ -4,7 +4,7 @@
 #let project(title: "", date: (), invoice_day_id: "", enterprise: (), customer: (), lawRules: "", politeness: "", tva: "", body) = {
   // Set the document's basic properties.
   set document(author: enterprise.name, title: title)
-  set text(font: "Linux Libertine", lang: "fr", blue.darken(80%))
+  set text(font: "Libertinus Serif", lang: "fr", blue.darken(80%))
 
   // Enterprise information.
   pad(
@@ -33,7 +33,7 @@
         pad(
           right: 5em,
           text(0.8em, [Dispensé d'immatriculation au registre du commerce et des sociétés (RCS) et au répertoire des métiers
-        
+
         #rect(fill: blue.lighten(70%),
         inset: 1em,
         grid(
@@ -57,13 +57,13 @@
     pad(top: 4em, block([#text(weight: 600, 1.2em, [Intitulé :]) #title]))
 
     body
-    
-    align(bottom + left, 
+
+    align(bottom + left,
     pad( bottom: 2em, politeness))
 
     align(bottom + left, text(0.9em, gray.darken(60%), lawRules))
 
-  
+
   align(bottom + center, pad(top: 2em, text(gray.darken(60%), [
     #enterprise.name \
     Siren: #enterprise.siren \
@@ -79,11 +79,11 @@
   let productsWithTotal = for product in products {
       ([#product.quantity], [#product.description], [#product.price €], [#{product.quantity * product.price} €])
   }
-  
+
   let totalHT = products.fold(0, (acc, product) => {
     acc + product.quantity * product.price
   })
-  
+
   pad(top: 2em,
     table(columns: (auto, 1fr, auto, auto),
     stroke: blue.darken(95%),
@@ -106,7 +106,7 @@
   let Total_TTC = if isTVAConcerned {
    ([*Total TTC*], [#(totalHT * 1.2) €])
    } else {()}
-  
+
   pad(top: 2em,
   align(end + top,
     box(inset: 0.3em, align(start + top, [
