@@ -1,5 +1,5 @@
-pub(super) mod create_customer;
-pub(super) mod get_all_customers;
+pub(crate) mod create_customer;
+pub(crate) mod get_all_customers;
 mod invoice_customer_manager_error;
-pub(super) mod delete_customer;
-pub(super) mod edit_customer;
+pub(crate) mod delete_customer;
+pub(crate) mod edit_customer;

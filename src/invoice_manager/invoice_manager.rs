@@ -7,7 +7,10 @@ use chrono::NaiveDate;
 use crate::entities::customer::Customer;
 use crate::entities::invoice::Invoice;
 use crate::entities::settings::Settings;
+#[cfg(test)]
+use mockall::automock;
 
+#[cfg_attr(test, automock)]
 pub trait InvoiceManager {
     fn create_invoice(
         &self,
