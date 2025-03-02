@@ -22,6 +22,10 @@ pub struct Settings {
     pub enterprise: Enterprise,
     pub law_rules: String,
     pub politeness: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub llm_instruct: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mistral_api_key: Option<String>,
 }
 
 #[cfg(test)]
@@ -51,6 +55,8 @@ mod tests {
                 enterprise: Enterprise::generate_simple_enterprise(),
                 law_rules: "Example Law".into(),
                 politeness: "Kind Regards".into(),
+                llm_instruct: None,
+                mistral_api_key: None,
             }
         }
     }

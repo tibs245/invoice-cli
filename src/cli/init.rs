@@ -47,6 +47,12 @@ pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Resu
 
     let law_rules = Editor::new().edit("Payment Terms: Net 30 days from the invoice date. In accordance with the terms and conditions of sale, a late payment penalty of 40€ per month (or the maximum rate permitted by law, whichever is lower) will be applied to all overdue balances. Interest will accrue daily from the due date until full payment is received. In addition to the late payment penalty, the purchaser agrees to reimburse the seller for all costs incurred in collecting any late payments, including, but not limited to, legal fees and collection agency charges.").unwrap().unwrap();
 
+    let llm_instruct: String = Input::new().with_prompt("LLM Instruction").allow_empty(true).interact_text().unwrap();
+    let llm_instruct = if &llm_instruct == "" { None } else { Some(llm_instruct) };
+
+    let mistral_api_key = Input::new().with_prompt("Mistral API Key").allow_empty(true).interact_text().unwrap();
+    let mistral_api_key = if &mistral_api_key == "" { None } else { Some(mistral_api_key) };
+    
     let settings = Settings {
         enterprise: Enterprise {
             name,
@@ -61,6 +67,8 @@ pub fn initiate_invoice_directory(context_parameters: ContextParameters) -> Resu
         },
         law_rules,
         politeness,
+        llm_instruct,
+        mistral_api_key,
     };
 
     let file_manager = FileManager::init(context_parameters)?;

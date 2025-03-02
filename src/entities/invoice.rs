@@ -37,7 +37,7 @@ impl fmt::Display for InvoiceDayId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Invoice {
     #[serde(
     serialize_with = "ser_invoice_date",

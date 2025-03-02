@@ -21,6 +21,7 @@ use crate::cli::get_settings::get_settings;
 use crate::cli::init::initiate_invoice_directory;
 use crate::cli::list_customers::list_customers;
 use crate::cli::list_invoices::list_invoices;
+use crate::cli::mistral_create_invoice::mistral_create_invoice;
 use crate::cli::month_stats::month_stats;
 use crate::cli::year_stats::year_stats;
 use crate::file_manager::context_parameters::ContextParameters;
@@ -30,6 +31,7 @@ mod entities;
 mod file_manager;
 mod generator;
 mod invoice_manager;
+mod mistral;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -83,7 +85,7 @@ enum Commands {
     /// Show stats
     Stats {
         #[command(subcommand)]
-        action: Option<StatsAction>
+        action: Option<StatsAction>,
     },
     /// Manage settings and enterprise informations
     Settings {
@@ -91,28 +93,23 @@ enum Commands {
         action: Option<CrudAction>,
     },
     /// Generate PDF for a invoice
-    Generate {
-        invoice: Option<String>
-    },
+    Generate { invoice: Option<String> },
     /// Generate PDF for all invoices saved
     GenerateAll,
+    InvoiceLlm {
+        #[command(subcommand)]
+        action: Option<CrudAction>,
+    },
 }
 
 #[derive(Subcommand)]
 enum CrudAction {
     Create,
     List,
-    Get {
-        element: Option<String>
-    },
-    Edit {
-        element: Option<String>
-    },
-    Delete {
-        element: Option<String>
-    },
+    Get { element: Option<String> },
+    Edit { element: Option<String> },
+    Delete { element: Option<String> },
 }
-
 
 #[derive(Subcommand)]
 enum StatsAction {
@@ -126,11 +123,12 @@ enum StatsAction {
         year: Option<i32>,
     },
     Year {
-        year: Option<i32>
+        year: Option<i32>,
     },
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
     let current_dir = env::current_dir().unwrap();
@@ -197,6 +195,18 @@ fn main() {
         },
         Some(Commands::Generate { invoice }) => generate_invoice(parameters, invoice),
         Some(Commands::GenerateAll) => generate_all_invoice(parameters),
+        Some(Commands::InvoiceLlm { action }) => match action {
+            Some(CrudAction::List) => Err(Box::new(CliError::CommandNotExists("You can only create a invoice with llm for the moment".to_string()))),
+            Some(CrudAction::Get { element }) => Err(Box::new(CliError::CommandNotExists("You can only create a invoice with llm for the moment".to_string()))),
+            Some(CrudAction::Create) => mistral_create_invoice(parameters).await,
+            Some(CrudAction::Edit { element: _element }) => {
+                Err(Box::new(CliError::CommandNotExists("You can only create a invoice with llm for the moment".to_string())))
+            }
+            Some(CrudAction::Delete { element }) => Err(Box::new(CliError::CommandNotExists("You can only create a invoice with llm for the moment".to_string()))),
+            None => {
+                Err(Box::new(CliError::CommandNotExists("You can only create a invoice with llm for the moment".to_string())))
+            }
+        },
         None => Err(Box::new(CliError::CommandNotExists("The option is not correct. Try to get help".to_string())))
     };
 
