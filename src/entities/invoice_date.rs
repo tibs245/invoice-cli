@@ -2,8 +2,9 @@ use std::fmt;
 
 use chrono::{Datelike, NaiveDate};
 use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, JsonSchema)]
 pub struct DayString(String);
 
 impl DayString {
@@ -34,7 +35,7 @@ impl fmt::Display for DayString {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, JsonSchema)]
 pub(crate) struct MonthString(String);
 
 impl MonthString {
@@ -66,7 +67,7 @@ impl fmt::Display for MonthString {
     }
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, JsonSchema)]
 struct YearString(String);
 
 impl YearString {
@@ -90,7 +91,7 @@ impl fmt::Display for YearString {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, JsonSchema)]
 pub struct InvoiceDate {
     day: DayString,
     month: MonthString,

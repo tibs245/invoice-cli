@@ -2,11 +2,13 @@ use std::fmt;
 
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
+use crate::entities::invoice_date::InvoiceDate;
 
 use crate::entities::invoice_date::{deser_invoice_date, ser_invoice_date};
 use crate::entities::product::Product;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Debug, JsonSchema)]
 pub struct InvoiceDayId(String);
 
 impl InvoiceDayId {
@@ -37,12 +39,13 @@ impl fmt::Display for InvoiceDayId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 pub struct Invoice {
     #[serde(
     serialize_with = "ser_invoice_date",
     deserialize_with = "deser_invoice_date"
     )]
+    #[schemars(with = "InvoiceDate")]
     pub date: NaiveDate,
     pub customer_id: String,
     pub title: String,

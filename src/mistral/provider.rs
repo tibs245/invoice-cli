@@ -5,105 +5,8 @@ use chrono::Local;
 use log::debug;
 use reqwest;
 use reqwest::Client;
+use serde_json::json;
 use std::error::Error;
-
-const CUSTOMER_LIST_TEMPLATE_KEY: &str = "{{ CUSTOMER_LIST }}";
-const USER_PROMPT_TEMPLATE_KEY: &str = "{{ USER_PROMPT }}";
-const CURRENT_DATE_TEMPLATE_KEY: &str = "{{ CURRENT_DATE }}";
-const USER_PREFERENCE_TEMPLATE_KEY: &str = "{{ USER_PREFERENCE }}";
-const REQUEST_BODY_TEMPLATE: &str = r#"{
-"model": "ministral-8b-latest",
-"messages": [
-{
-"role": "system",
-"content": "Extract the invoice information to create it. If the date is not specified, use the default date: {{ CURRENT_DATE }} (in format: YYYY-MM-DD)."
-},
-{
-"role": "system",
-"content": "The context and preference of the user : {{ USER_PREFERENCE }}"
-},
-{
-"role": "user",
-"content": "{{ USER_PROMPT }}"
-}
-],
-"response_format": {
-"type": "json_schema",
-"json_schema": {
-"schema": {
-"properties": {
-"title": {
-"title": "Title",
-"type": "string"
-},
-"customer_id": {
-"title": "CustomerID",
-"description": "Customer ID. Must be a value of the this list: {{ CUSTOMER_LIST }}",
-"type": "string"
-},
-"date": {
-"title": "Date of invoice. Current date if not specified.",
-"additionalProperties": false,
-"required": ["day", "month", "year"],
-"title": "Date",
-"type": "object",
-"properties": {
-"day": {
-"title": "Day",
-"description": "Day of month. Example: 01, 15, 31.",
-"type": "string"
-},
-"month": {
-"title": "Month",
-"description": "Month of year. Example: 01, 06, 12.",
-"type": "string"
-},
-"year": {
-"title": "Year",
-"description": "Year. Example: 2022.",
-"type": "string"
-}
-}
-},
-"products": {
-"items": {
-"properties": {
-"description": {
-"title": "Description",
-"type": "string"
-},
-"quantity": {
-"title": "Quantity",
-"description": "Quantity of product in float format. Example: 1.00",
-"type": "number"
-},
-"price": {
-"title": "Price",
-"description": "Price per unit in float format. Example: 10.00",
-"type": "number"
-}
-},
-"additionalProperties": false,
-"required": ["description", "quantity", "price"],
-"title": "Product",
-"type": "object"
-},
-"title": "Products",
-"type": "array"
-}
-},
-"required": ["name", "products", "date", "customer_id"],
-"title": "Invoice",
-"type": "object",
-"additionalProperties": false
-},
-"name": "invoice",
-"strict": true
-}
-},
-"max_tokens": 256,
-"temperature": 0
-}"#;
 
 fn generate_mistral_create_invoice_request(
     invoice_manager: &impl InvoiceManager,
@@ -116,13 +19,52 @@ fn generate_mistral_create_invoice_request(
         .collect();
 
     let current_date = Local::now().date_naive();
+    let user_pref = invoice_manager
+        .get_settings()?
+        .llm_instruct
+        .unwrap_or_else(|| "".to_string());
 
-    Ok(REQUEST_BODY_TEMPLATE
-        .to_string()
-        .replace(CUSTOMER_LIST_TEMPLATE_KEY, &all_customers.join(", "))
-        .replace(USER_PROMPT_TEMPLATE_KEY, prompt)
-        .replace(CURRENT_DATE_TEMPLATE_KEY, &format!("{}", Local::now().date_naive()))
-        .replace(USER_PREFERENCE_TEMPLATE_KEY, &invoice_manager.get_settings()?.llm_instruct.unwrap_or("".to_string())))
+    let mut schema = serde_json::to_value(&schemars::schema_for!(Invoice))?;
+    if let Some(desc) = schema
+        .get_mut("properties")
+        .and_then(|p| p.get_mut("customer_id"))
+        .and_then(|v| v.as_object_mut())
+    {
+        desc.insert(
+            "description".to_string(),
+            json!(format!(
+                "Customer ID. Must be a value of the this list: {}",
+                all_customers.join(", ")
+            )),
+        );
+    }
+
+    let body = json!({
+        "model": "ministral-8b-latest",
+        "messages": [
+            {
+                "role": "system",
+                "content": format!(
+                    "Extract the invoice information to create it. If the date is not specified, use the default date: {} (in format: YYYY-MM-DD).",
+                    current_date
+                )
+            },
+            {"role": "system", "content": format!("The context and preference of the user : {}", user_pref)},
+            {"role": "user", "content": prompt},
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "schema": schema,
+                "name": "invoice",
+                "strict": true
+            }
+        },
+        "max_tokens": 256,
+        "temperature": 0
+    });
+
+    Ok(body.to_string())
 }
 
 pub async fn extract_invoice_params(
